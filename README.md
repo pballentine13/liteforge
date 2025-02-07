@@ -10,6 +10,7 @@ A lightweight and flexible ORM for Go, giving you direct control over your SQL q
 *   **Customizable:** Adapt Liteforge to your specific needs by extending its functionality or integrating with other libraries.
 
 ## Installation
+**NOTE: This is a work in progress
 
 ```bash
-go get [github.com/pballentine13/liteforge](https://www.google.com/search?q=https://github.com/pballentine13/liteforge)
+go get github.com/pballentine13/liteforge
