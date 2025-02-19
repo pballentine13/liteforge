@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strings"
@@ -50,7 +51,7 @@ func getFieldInfo(model interface{}) ([]string, []string) {
 // CreateTable creates a database table based on the provided model.
 func CreateTable(db *sql.DB, model interface{}) error {
 	tableName := getTableName(model)
-	columns, _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
+	// columns, _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
 
 	var columnDefinitions []string
 	val := reflect.ValueOf(model)
