@@ -2,7 +2,7 @@ package liteforge
 
 import (
 	"database/sql"
-	_"github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 	_ "reflect"
 )
 
@@ -27,6 +27,7 @@ func OpenDB(cfg Config) (*sql.DB, error) {
 // CreateTable creates a database table based on the provided model.
 func CreateTable(db *sql.DB, model interface{}) error {
 	// TODO: Implement table creation using reflection and struct tags.
+
 	return nil // Placeholder
 }
 
