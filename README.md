@@ -22,8 +22,9 @@ A lightweight and flexible ORM for Go, designed for simplicity and ease of use w
 go get github.com/pballentine13/liteforge
 ```
 ### 2. Import the Library
+```
 import "github.com/pballentine13/liteforge" 
-
+```
 
 ### 3. Define Your Data Models
 Use Go structs to represent your database tables. Use the db tag to customize the mapping between struct fields and database column names. Use the pk:"true" tag to mark the field as primary key with auto increment.
