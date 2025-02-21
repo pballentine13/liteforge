@@ -54,16 +54,16 @@ func CreateTable(db *sql.DB, model interface{}) error {
 	fmt.Println(model)
 
 	if db == nil {
-		return errors.New("database passed in was nil")
+		return errors.New("database passed in was nil\n")
 	}
 
 	if model == nil {
-		return errors.New("no model passed in. model was nil")
+		return errors.New("no model passed in. model was nil\n")
 	}
 
 	modelKind := reflect.TypeOf(model).Kind()
 	if modelKind != reflect.Struct {
-		return errors.New("no model passed in")
+		return errors.New("no model passed in\n")
 	}
 	tableName := getTableName(model)
 	// columns _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
