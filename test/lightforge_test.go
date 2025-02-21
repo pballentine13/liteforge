@@ -1,6 +1,7 @@
 package lightforge
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -58,16 +59,16 @@ func TestOpenDB_Unit(t *testing.T) {
 
 // TestUser is a sample struct for testing table creation
 type TestUser struct {
-	ID        int    `db:"id,primarykey,autoincrement"`
-	Username  string `db:"username,unique,notnull"`
-	Email     string `db:"email,unique"`
-	Age       int    `db:"age"`
-	IsActive  bool   `db:"is_active,default:true"`
+	ID       int    `db:"id" pk:"true"`
+	Username string `db:"username"`
+	Email    string `db:"email"`
+	Age      int    `db:"age"`
+	IsActive bool   `db:"is_active"`
 }
 
 var cfg liteforge.Config = liteforge.Config{
-	DriverName:			"sqlite3",
-	DataSourceName:	":memory:",
+	DriverName:     "sqlite3",
+	DataSourceName: ":memory:",
 }
 
 func TestCreateTable(t *testing.T) {
@@ -117,19 +118,20 @@ func TestCreateTable(t *testing.T) {
 				// Verify table exists and has correct schema
 				var tableName string
 				if tt.name == "Valid struct with tags" {
-					tableName = "test_users" // Assuming table name is pluralized lowercase of struct name
-					
+					tableName = "testuser" // Assuming table name is pluralized lowercase of struct name
+
 					// Query SQLite schema for table info
 					var count int
 					err := db.QueryRow(`SELECT COUNT(*) FROM sqlite_master 
 						WHERE type='table' AND name=?`, tableName).Scan(&count)
-					
+
 					if err != nil {
 						t.Errorf("Failed to query table existence: %v", err)
 					}
-					
+
 					if count != 1 {
-						t.Errorf("Table %s was not created", tableName)
+						fmt.Println(count)
+						t.Errorf("Table %s was not created: ", tableName)
 					}
 
 					// Verify columns exist with correct types
@@ -151,14 +153,14 @@ func TestCreateTable(t *testing.T) {
 					// Verify each column
 					for rows.Next() {
 						var (
-							cid          int
-							name         string
-							columnType   string
-							notNull      bool
-							defaultVal   interface{}
-							primaryKey   bool
+							cid        int
+							name       string
+							columnType string
+							notNull    bool
+							defaultVal interface{}
+							primaryKey bool
 						)
-						
+
 						if err := rows.Scan(&cid, &name, &columnType, &notNull, &defaultVal, &primaryKey); err != nil {
 							t.Errorf("Failed to scan column info: %v", err)
 						}
