@@ -26,6 +26,6 @@ func OpenDB(cfg Config) (*sql.DB, error) {
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-
+	fmt.Print(db)
 	return db, nil
 }
