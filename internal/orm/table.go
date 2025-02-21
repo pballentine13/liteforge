@@ -2,6 +2,7 @@ package orm
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -50,8 +51,18 @@ func getFieldInfo(model interface{}) ([]string, []string) {
 
 // CreateTable creates a database table based on the provided model.
 func CreateTable(db *sql.DB, model interface{}) error {
+	fmt.Println(model)
+
+	if model == nil {
+		return errors.New("no model passed in. model was nil")
+	}
+
+	modelKind := reflect.TypeOf(model).Kind()
+	if modelKind != reflect.Struct {
+		return errors.New("no model passed in")
+	}
 	tableName := getTableName(model)
-	// columns, _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
+	// columns _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
 
 	var columnDefinitions []string
 	val := reflect.ValueOf(model)
@@ -86,7 +97,7 @@ func CreateTable(db *sql.DB, model interface{}) error {
 		// Check for primary key tag
 		pkTag := field.Tag.Get("pk")
 		if pkTag == "true" {
-			sqlType += " PRIMARY KEY AUTOINCREMENT"
+			sqlType += " PRIMARY KEY"
 		}
 
 		columnDefinitions = append(columnDefinitions, fmt.Sprintf("%s %s", columnName, sqlType))
@@ -94,7 +105,6 @@ func CreateTable(db *sql.DB, model interface{}) error {
 	}
 
 	createQuery := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", tableName, strings.Join(columnDefinitions, ", "))
-
 	_, err := db.Exec(createQuery)
 	if err != nil {
 		return fmt.Errorf("failed to create table: %w", err)
