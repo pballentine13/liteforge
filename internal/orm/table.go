@@ -53,6 +53,10 @@ func getFieldInfo(model interface{}) ([]string, []string) {
 func CreateTable(db *sql.DB, model interface{}) error {
 	fmt.Println(model)
 
+	if db == nil {
+		return errors.New("database passed in was nil")
+	}
+
 	if model == nil {
 		return errors.New("no model passed in. model was nil")
 	}
