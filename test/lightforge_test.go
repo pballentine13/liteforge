@@ -42,7 +42,7 @@ func TestOpenDB_Unit(t *testing.T) {
 			}
 
 			db, err := liteforge.OpenDB(tc.config)
-
+			fmt.Printf("Printing db from Testfile: %v \n", db)
 			if tc.expectedErr {
 				assert.Error(t, err)
 				assert.Nil(t, db)

@@ -21,12 +21,14 @@ func OpenDB(cfg Config) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
-
+	//print debugging
+	fmt.Printf("Config Driver: %s Config DataSourceName: %s", cfg.DriverName, cfg.DataSourceName)
 	// Test the connection
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-	fmt.Print("DB Pring\n")
+	fmt.Print("DB Debug Print: ")
 	fmt.Print(db)
+	fmt.Print("\n")
 	return db, nil
 }
