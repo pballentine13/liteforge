@@ -51,8 +51,8 @@ func getFieldInfo(model interface{}) ([]string, []string) {
 
 // CreateTable creates a database table based on the provided model.
 func CreateTable(db *sql.DB, model interface{}) error {
-	fmt.Println(model)
 
+	//Check for invalid inputs
 	if db == nil {
 		return errors.New("database passed in was nil\n")
 	}
@@ -69,6 +69,8 @@ func CreateTable(db *sql.DB, model interface{}) error {
 	// columns _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
 
 	var columnDefinitions []string
+	var columnConstraint string
+
 	val := reflect.ValueOf(model)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -79,9 +81,10 @@ func CreateTable(db *sql.DB, model interface{}) error {
 		columnName := strings.ToLower(field.Name) // Default column name
 
 		// Check for a `db` tag to customize the column name.
+		columnConstraint = ""
 		dbTag := field.Tag.Get("db")
 		if dbTag != "" {
-			columnName = dbTag
+			columnConstraint = strings.ToUpper(dbTag)
 		}
 		fieldType := field.Type.String()
 		sqlType := ""
@@ -104,7 +107,7 @@ func CreateTable(db *sql.DB, model interface{}) error {
 			sqlType += " PRIMARY KEY"
 		}
 
-		columnDefinitions = append(columnDefinitions, fmt.Sprintf("%s %s", columnName, sqlType))
+		columnDefinitions = append(columnDefinitions, fmt.Sprintf("%s %s %s", columnName, sqlType, columnConstraint))
 
 	}
 

@@ -1,7 +1,6 @@
 package lightforge
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -32,6 +31,15 @@ func TestOpenDB_Unit(t *testing.T) {
 			},
 			expectedErr: false,
 		},
+		{
+			name: "Write-Ahead Log Test",
+			config: liteforge.Config{
+				DriverName:        "sqlite3",
+				DataSourceName:    "wal-test.db",
+				UseWriteAheadLogs: true,
+			},
+			expectedErr: false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -42,7 +50,14 @@ func TestOpenDB_Unit(t *testing.T) {
 			}
 
 			db, err := liteforge.OpenDB(tc.config)
-			fmt.Printf("Printing db from Testfile: %v \n", db)
+			if tc.name == "Write-Ahead Log Test" {
+				defer os.Remove("wal-test.db") // Remove test.db after the test
+				var journalMode string
+				err = db.QueryRow("PRAGMA journal_mode;").Scan(&journalMode)
+				if journalMode != "wal" {
+					t.Errorf("Journal mode not set to WAL: %s", journalMode)
+				}
+			}
 			if tc.expectedErr {
 				assert.Error(t, err)
 				assert.Nil(t, db)
@@ -59,11 +74,11 @@ func TestOpenDB_Unit(t *testing.T) {
 
 // TestUser is a sample struct for testing table creation
 type TestUser struct {
-	ID       int    `db:"id" pk:"true"`
-	Username string `db:"username"`
-	Email    string `db:"email"`
-	Age      int    `db:"age"`
-	IsActive bool   `db:"is_active"`
+	ID       int    `db:"not null" pk:"true"`
+	Username string `db:"unique not null"`
+	Email    string `db:"not null unique"`
+	Age      int
+	IsActive bool
 }
 
 var cfg liteforge.Config = liteforge.Config{
@@ -130,7 +145,6 @@ func TestCreateTable(t *testing.T) {
 					}
 
 					if count != 1 {
-						fmt.Println(count)
 						t.Errorf("Table %s was not created: ", tableName)
 					}
 
@@ -143,11 +157,11 @@ func TestCreateTable(t *testing.T) {
 
 					// Map to store expected columns and their types
 					expectedColumns := map[string]string{
-						"id":        "INTEGER",
-						"username":  "TEXT",
-						"email":     "TEXT",
-						"age":       "INTEGER",
-						"is_active": "BOOLEAN",
+						"id":       "INTEGER",
+						"username": "TEXT",
+						"email":    "TEXT",
+						"age":      "INTEGER",
+						"isactive": "BOOLEAN",
 					}
 
 					// Verify each column
