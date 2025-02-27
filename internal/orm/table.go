@@ -9,7 +9,7 @@ import (
 )
 
 // getTableName extracts the table name from a struct type using reflection.
-func getTableName(model interface{}) string {
+func GetTableName(model interface{}) string {
 	t := reflect.TypeOf(model)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem() // Dereference the pointer if it is a pointer.
@@ -22,7 +22,7 @@ func getTableName(model interface{}) string {
 
 // getFieldInfo extracts field information from a struct using reflection.
 // It returns slices of column names and placeholders for use in SQL queries.
-func getFieldInfo(model interface{}) ([]string, []string) {
+func GetFieldInfo(model interface{}) ([]string, []string) {
 	val := reflect.ValueOf(model)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()

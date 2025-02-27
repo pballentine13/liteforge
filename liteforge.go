@@ -12,6 +12,8 @@ var Query = orm.Query
 var Exec = orm.Exec
 var BeginTx = orm.BeginTx
 var SanitizeInput = orm.SanitizeInput
+var GetTableName = orm.GetTableName
+var GetFieldInfo = orm.GetFieldInfo
 
 //type UserDataStore = orm.UserDataStore
 //type SQLiteDataStore = orm.SQLiteDataStore
