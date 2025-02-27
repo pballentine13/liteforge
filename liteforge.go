@@ -8,10 +8,6 @@ type Config = orm.Config
 
 var OpenDB = orm.OpenDB
 var CreateTable = orm.CreateTable
-var Create = orm.Create
-var Get = orm.Get
-var Update = orm.Update
-var Delete = orm.Delete
 var Query = orm.Query
 var Exec = orm.Exec
 var BeginTx = orm.BeginTx
