@@ -65,7 +65,7 @@ func CreateTable(db *sql.DB, model interface{}) error {
 	if modelKind != reflect.Struct {
 		return errors.New("no model passed in\n")
 	}
-	tableName := getTableName(model)
+	tableName := GetTableName(model)
 	// columns _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
 
 	var columnDefinitions []string

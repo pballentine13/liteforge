@@ -11,7 +11,6 @@ A lightweight and flexible ORM for Go, designed for simplicity and ease of use w
 
 ## Planned Features
 *   **PostgreSQL:** Will beable to select between Postgres or SQLite. 
-*   **CRUD Operations:** Streamlined Create, Read (Get), Update, and Delete operations.
 *   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
 *   **Transactions:** Support for database transactions with `BeginTx`, `Commit`, and `Rollback`.
 *   **Data Stores:** Interface-based data stores for flexible data access patterns (e.g., SQLite, API).
@@ -91,49 +90,6 @@ func main() {
 	// ... (Database connection code from above)
 
 	err := liteforge.CreateTable(db, model.User{})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-```
-
-### 6. Perform CRUD Operations
-```
-import (
-	"fmt"
-	"log"
-
-	"github.com/pballentine13/liteforge"  
-    "github.com/pballentine13/pkg/model"
-)
-
-func main() {
-	// ... (Database connection and table creation code from above)
-
-	// Create
-	user := model.User{Name: "John Doe", Email: "john.doe@example.com"}
-	err := liteforge.Create(db, &user)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Get
-	var retrievedUser model.User
-	err = liteforge.Get(db, "users", 1, &retrievedUser)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(retrievedUser)
-
-	// Update
-	retrievedUser.Email = "new.email@example.com"
-	err = liteforge.Update(db, "users", retrievedUser.ID, &retrievedUser)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Delete
-	err = liteforge.Delete(db, "users", 1)
 	if err != nil {
 		log.Fatal(err)
 	}
