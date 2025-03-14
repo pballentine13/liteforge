@@ -9,7 +9,7 @@ import (
 )
 
 // getTableName extracts the table name from a struct type using reflection.
-func GetTableName(model interface{}) string {
+func GetTableName(model any) string {
 	t := reflect.TypeOf(model)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem() // Dereference the pointer if it is a pointer.
@@ -22,7 +22,7 @@ func GetTableName(model interface{}) string {
 
 // getFieldInfo extracts field information from a struct using reflection.
 // It returns slices of column names and placeholders for use in SQL queries.
-func GetFieldInfo(model interface{}) ([]string, []string) {
+func GetFieldInfo(model any) ([]string, []string) {
 	val := reflect.ValueOf(model)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -37,11 +37,11 @@ func GetFieldInfo(model interface{}) ([]string, []string) {
 		field := t.Field(i)
 		columnName := strings.ToLower(field.Name) // Default column name
 
-		// Check for a `db` tag to customize the column name.
-		dbTag := field.Tag.Get("db")
-		if dbTag != "" {
-			columnName = dbTag
-		}
+		// // Check for a `db` tag to customize the column name.
+		// dbTag := field.Tag.Get("db")
+		// if dbTag != "" {
+		// 	columnName = dbTag
+		// }
 		columns = append(columns, columnName)
 		placeholders = append(placeholders, "?") // SQLite placeholder
 	}
@@ -50,7 +50,7 @@ func GetFieldInfo(model interface{}) ([]string, []string) {
 }
 
 // CreateTable creates a database table based on the provided model.
-func CreateTable(db *sql.DB, model interface{}) error {
+func CreateTable(db *sql.DB, model any) error {
 
 	//Check for invalid inputs
 	if db == nil {
