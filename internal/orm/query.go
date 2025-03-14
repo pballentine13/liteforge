@@ -6,7 +6,7 @@ import (
 )
 
 // Query performs a custom SQL query.
-func Query(db *sql.DB, query string, args ...interface{}) (*sql.Rows, error) {
+func Query(db *sql.DB, query string, args ...any) (*sql.Rows, error) {
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare query: %w", err)
@@ -21,8 +21,23 @@ func Query(db *sql.DB, query string, args ...interface{}) (*sql.Rows, error) {
 	return rows, nil // The caller is responsible for closing the rows.
 }
 
+// Query performs a custom SQL query for a single row.
+func QueryRow(db *sql.DB, query string, args ...any) (*sql.Row, error) {
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare query: %w", err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRow(args...)
+
+	return row, nil // The caller is responsible for closing the rows.
+}
+
+
+
 // Exec performs a custom SQL execution (INSERT, UPDATE, DELETE).
-func Exec(db *sql.DB, query string, args ...interface{}) (sql.Result, error) {
+func Exec(db *sql.DB, query string, args ...any) (sql.Result, error) {
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare exec statement: %w", err)

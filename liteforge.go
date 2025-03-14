@@ -9,6 +9,7 @@ type Config = orm.Config
 var OpenDB = orm.OpenDB
 var CreateTable = orm.CreateTable
 var Query = orm.Query
+var QueryRow = orm.QueryRow
 var Exec = orm.Exec
 var BeginTx = orm.BeginTx
 var SanitizeInput = orm.SanitizeInput
@@ -18,3 +19,4 @@ var GetFieldInfo = orm.GetFieldInfo
 //type UserDataStore = orm.UserDataStore
 //type SQLiteDataStore = orm.SQLiteDataStore
 //type APIDataStore = orm.APIDataStore
+
