@@ -1,6 +1,6 @@
 # Liteforge ORM
 
-A lightweight and flexible ORM for Go, designed for simplicity and ease of use with both SQLite and PostgreSQL databases. Liteforge leverages Go's reflection capabilities to provide a clean and efficient way to interact with your database, minimizing boilerplate code and maximizing developer productivity.
+A lightweight and flexible ORM for Go, designed for simplicity and ease of use with SQLite databases. Liteforge leverages Go's reflection capabilities to provide a clean and efficient way to interact with your database, minimizing boilerplate code and maximizing developer productivity.
 
 ## Features
 
@@ -8,11 +8,11 @@ A lightweight and flexible ORM for Go, designed for simplicity and ease of use w
 *   **Schema Generation:** Automatic table creation based on Go struct definitions
 *   **Reflection-Based Mapping:** Automatically maps Go struct fields to database columns using reflection and optional `db` tags.
 *   **Lightweight:** Minimal dependencies and a focus on performance.
+*   **Transactions:** Support for database transactions with `BeginTx`, `Commit`, and `Rollback`.
 
 ## Planned Features
 *   **PostgreSQL:** Will beable to select between Postgres or SQLite. 
 *   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
-*   **Transactions:** Support for database transactions with `BeginTx`, `Commit`, and `Rollback`.
 *   **Data Stores:** Interface-based data stores for flexible data access patterns (e.g., SQLite, API).
 *   **Database Agnostic:** Supports both SQLite and PostgreSQL (and potentially other databases with minimal modifications).
 
@@ -24,24 +24,24 @@ A lightweight and flexible ORM for Go, designed for simplicity and ease of use w
 go get github.com/pballentine13/liteforge
 ```
 ### 2. Import the Library
-```
+```go
 import "github.com/pballentine13/liteforge" 
 ```
 
 ### 3. Define Your Data Models
 Use Go structs to represent your database tables. Use the db tag to customize the mapping between struct fields and database column names. Use the pk:"true" tag to mark the field as primary key with auto increment.
-```
+```go
 package model
 
 type User struct {
     ID    int    `db:"id" pk:"true"` // Auto-incrementing primary key
-    Name  string `db:"name"`       // Maps to the "name" column
-    Email string `db:"email"`      // Maps to the "email" column
+    Name  string                     // Maps to the "name" column
+    Email string                     // Maps to the "email" column
 }
 ```
 
 ### 4. Configure and Open the Database Connection
-```
+```go
 import (
 	"log"
 	"os"
@@ -78,7 +78,7 @@ func main() {
 ```
 
 ### 5. Create the Table
-```
+```go
 import (
 	"log"
 
@@ -97,7 +97,7 @@ func main() {
 ```
 Advanced Usage
 Custom Queries
-```
+```go
 rows, err := liteforge.Query(db, "SELECT * FROM users WHERE name LIKE ?", "%John%")
 if err != nil {
     log.Fatal(err)
@@ -108,7 +108,7 @@ defer rows.Close()
 ```
 
 Transactions
-```
+```go
 tx, err := liteforge.BeginTx(db)
 if err != nil {
     log.Fatal(err)

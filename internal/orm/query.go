@@ -34,8 +34,6 @@ func QueryRow(db *sql.DB, query string, args ...any) (*sql.Row, error) {
 	return row, nil // The caller is responsible for closing the rows.
 }
 
-
-
 // Exec performs a custom SQL execution (INSERT, UPDATE, DELETE).
 func Exec(db *sql.DB, query string, args ...any) (sql.Result, error) {
 	stmt, err := db.Prepare(query)
