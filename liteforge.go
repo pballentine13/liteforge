@@ -19,4 +19,3 @@ var GetFieldInfo = orm.GetFieldInfo
 //type UserDataStore = orm.UserDataStore
 //type SQLiteDataStore = orm.SQLiteDataStore
 //type APIDataStore = orm.APIDataStore
-

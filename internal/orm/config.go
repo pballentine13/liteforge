@@ -29,7 +29,7 @@ func OpenDB(cfg Config) (*sql.DB, error) {
 		if err := os.MkdirAll(dbDir, os.FileMode(dbDirPerm)); err != nil {
 			return nil, fmt.Errorf("failed to create directory: %w", err)
 		}
-	} 
+	}
 
 	db, err := sql.Open(cfg.DriverName, cfg.DataSourceName)
 	if err != nil {
