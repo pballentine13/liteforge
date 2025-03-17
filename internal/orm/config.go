@@ -3,6 +3,8 @@ package orm
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3" // For SQLite
 )
@@ -18,11 +20,21 @@ type Config struct {
 
 // OpenDB establishes a database connection based on the provided configuration.
 func OpenDB(cfg Config) (*sql.DB, error) {
+	dbDirPerm := 0755 //Directory permission
+	dbPath := cfg.DataSourceName
+	dbDir := filepath.Dir(dbPath)
+
+	if _, err := os.Stat(dbDir); os.IsNotExist(err) {
+		//creating directory
+		if err := os.MkdirAll(dbDir, os.FileMode(dbDirPerm)); err != nil {
+			return nil, fmt.Errorf("failed to create directory: %w", err)
+		}
+	} 
+
 	db, err := sql.Open(cfg.DriverName, cfg.DataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
-	// TODO: Add directory detection/parsing - Patrick 2/22/25
 
 	//Set up wal mode, if needed.
 	if cfg.UseWriteAheadLogs {
