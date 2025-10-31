@@ -17,6 +17,7 @@ A lightweight and flexible ORM for Go, designed for simplicity and the **Reposit
 *   **Reflection-Based Mapping:** Automatically maps Go struct fields to database columns.
 *   **Transactions:** Support for database transactions.
 *   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
+*   **Model-Centric Repository:** High-level CRUD operations (Save, FindByID, Delete) using Go structs.
 
 ## Planned Features
 
