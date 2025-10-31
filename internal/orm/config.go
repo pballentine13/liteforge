@@ -1,12 +1,7 @@
 package orm
 
 import (
-	"database/sql"
 	"fmt"
-	"os"
-	"path/filepath"
-
-	_ "github.com/mattn/go-sqlite3" // For SQLite
 )
 
 // Config holds the configuration options for the Liteforge database connection.
@@ -18,35 +13,25 @@ type Config struct {
 	EncryptionKey     string // The encryption key (if EncryptAtRest is true).  SHOULD NOT BE HARDCODED.
 }
 
-// OpenDB establishes a database connection based on the provided configuration.
-func OpenDB(cfg Config) (*sql.DB, error) {
-	dbDirPerm := 0755 //Directory permission
-	dbPath := cfg.DataSourceName
-	dbDir := filepath.Dir(dbPath)
-
-	if _, err := os.Stat(dbDir); os.IsNotExist(err) {
-		//creating directory
-		if err := os.MkdirAll(dbDir, os.FileMode(dbDirPerm)); err != nil {
-			return nil, fmt.Errorf("failed to create directory: %w", err)
-		}
+// OpenDB establishes a database connection based on the provided configuration and returns a Datastore.
+func OpenDB(cfg Config) (*Datastore, error) {
+	var adapter DBAdapter
+	switch cfg.DriverName {
+	case "sqlite3":
+		adapter = &SQLiteAdapter{}
+	case "postgres":
+		adapter = &PostgresAdapter{}
+	default:
+		return nil, fmt.Errorf("unsupported database driver: %s", cfg.DriverName)
 	}
 
-	db, err := sql.Open(cfg.DriverName, cfg.DataSourceName)
+	db, err := adapter.Connect(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return nil, err
 	}
 
-	//Set up wal mode, if needed.
-	if cfg.UseWriteAheadLogs {
-		_, err = db.Exec("PRAGMA journal_mode=WAL;")
-		if err != nil {
-			return nil, fmt.Errorf("Failed to switch to WAL mode: %w", err)
-		}
-	}
-	// Test the connection
-
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
-	return db, nil
+	return &Datastore{
+		DB:      db,
+		Adapter: adapter,
+	}, nil
 }

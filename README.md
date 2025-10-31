@@ -1,20 +1,18 @@
 # Liteforge ORM
 
-A lightweight and flexible ORM for Go, designed for simplicity and ease of use with SQLite databases. Liteforge leverages Go's reflection capabilities to provide a clean and efficient way to interact with your database, minimizing boilerplate code and maximizing developer productivity.
+A lightweight and flexible ORM for Go, designed for simplicity and ease of use with SQLite and PostgreSQL databases. Liteforge leverages Go's reflection capabilities to provide a clean and efficient way to interact with your database, minimizing boilerplate code and maximizing developer productivity.
 
 ## Features
 
-*   **Simple Configuration:** Easy-to-configure database connections for SQLite
+*   **Simple Configuration:** Easy-to-configure database connections for SQLite and PostgreSQL
 *   **Schema Generation:** Automatic table creation based on Go struct definitions
 *   **Reflection-Based Mapping:** Automatically maps Go struct fields to database columns using reflection and optional `db` tags.
 *   **Lightweight:** Minimal dependencies and a focus on performance.
 *   **Transactions:** Support for database transactions with `BeginTx`, `Commit`, and `Rollback`.
+*   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
 
 ## Planned Features
-*   **PostgreSQL:** Will beable to select between Postgres or SQLite. 
-*   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
 *   **Data Stores:** Interface-based data stores for flexible data access patterns (e.g., SQLite, API).
-*   **Database Agnostic:** Supports both SQLite and PostgreSQL (and potentially other databases with minimal modifications).
 
 ## Getting Started
 

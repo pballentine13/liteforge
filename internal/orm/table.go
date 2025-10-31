@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
@@ -22,7 +21,7 @@ func GetTableName(model any) string {
 
 // getFieldInfo extracts field information from a struct using reflection.
 // It returns slices of column names and placeholders for use in SQL queries.
-func GetFieldInfo(model any) ([]string, []string) {
+func GetFieldInfo(model any) ([]string, []interface{}) {
 	val := reflect.ValueOf(model)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -31,7 +30,7 @@ func GetFieldInfo(model any) ([]string, []string) {
 
 	numFields := val.NumField()
 	columns := make([]string, 0, numFields)
-	placeholders := make([]string, 0, numFields)
+	values := make([]interface{}, 0, numFields)
 
 	for i := 0; i < numFields; i++ {
 		field := t.Field(i)
@@ -43,78 +42,48 @@ func GetFieldInfo(model any) ([]string, []string) {
 		// 	columnName = dbTag
 		// }
 		columns = append(columns, columnName)
-		placeholders = append(placeholders, "?") // SQLite placeholder
+		values = append(values, val.Field(i).Interface())
 	}
 
-	return columns, placeholders
+	return columns, values
 }
 
-// CreateTable creates a database table based on the provided model.
-func CreateTable(db *sql.DB, model any) error {
-
-	//Check for invalid inputs
-	if db == nil {
-		return errors.New("database passed in was nil\n")
-	}
-
-	if model == nil {
-		return errors.New("no model passed in. model was nil\n")
-	}
-
-	modelKind := reflect.TypeOf(model).Kind()
-	if modelKind != reflect.Struct {
-		return errors.New("no model passed in\n")
-	}
-	tableName := GetTableName(model)
-	// columns _ := getFieldInfo(model) // We only need the columns for CREATE TABLE.
-
-	var columnDefinitions []string
-	var columnConstraint string
-
+// GetPrimaryKeyColumn extracts the primary key column name from a struct type.
+func GetPrimaryKeyColumn(model any) (string, error) {
 	val := reflect.ValueOf(model)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
 	t := val.Type()
+
 	for i := 0; i < val.NumField(); i++ {
 		field := t.Field(i)
-		columnName := strings.ToLower(field.Name) // Default column name
-
-		// Check for a `db` tag to customize the column name.
-		columnConstraint = ""
-		dbTag := field.Tag.Get("db")
-		if dbTag != "" {
-			columnConstraint = strings.ToUpper(dbTag)
-		}
-		fieldType := field.Type.String()
-		sqlType := ""
-
-		switch fieldType {
-		case "int", "int64", "int32", "int16", "int8":
-			sqlType = "INTEGER"
-		case "string":
-			sqlType = "TEXT"
-		case "float64", "float32":
-			sqlType = "REAL"
-		case "bool":
-			sqlType = "BOOLEAN"
-		default:
-			sqlType = "TEXT" // Default to TEXT if type is unknown
-		}
-		// Check for primary key tag
 		pkTag := field.Tag.Get("pk")
 		if pkTag == "true" {
-			sqlType += " PRIMARY KEY"
+			// Default column name is lowercase field name
+			return strings.ToLower(field.Name), nil
 		}
-
-		columnDefinitions = append(columnDefinitions, fmt.Sprintf("%s %s %s", columnName, sqlType, columnConstraint))
-
 	}
 
-	createQuery := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", tableName, strings.Join(columnDefinitions, ", "))
-	_, err := db.Exec(createQuery)
+	return "", errors.New("model has no primary key field (tag: `pk:\"true\"`)")
+}
+
+// CreateTable creates a database table based on the provided model using the Datastore's adapter.
+func CreateTable(ds *Datastore, model any) error {
+
+	//Check for invalid inputs
+	if ds == nil || ds.DB == nil || ds.Adapter == nil {
+		return errors.New("datastore, database connection, or adapter was nil")
+	}
+
+	createQuery, err := ds.Adapter.CreateTableSQL(model)
 	if err != nil {
-		return fmt.Errorf("failed to create table: %w", err)
+		return fmt.Errorf("failed to generate create table SQL: %w", err)
+	}
+
+	_, err = ds.DB.Exec(createQuery)
+	if err != nil {
+		return fmt.Errorf("failed to execute create table query: %w", err)
 	}
 
 	return nil
