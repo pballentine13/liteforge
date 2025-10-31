@@ -10,7 +10,7 @@ A lightweight and flexible ORM for Go, designed for simplicity and ease of use w
 *   **Lightweight:** Minimal dependencies and a focus on performance.
 *   **Transactions:** Support for database transactions with `BeginTx`, `Commit`, and `Rollback`.
 *   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
-*   **Model-Centric Repository:** High-level CRUD operations (Save, FindByID, Delete) using Go structs.
+*   **Input Sanitization:** A utility function (`Sanitize`) is provided to protect against Cross-Site Scripting (XSS) in HTML output, powered by Bluemonday.
 
 ## Planned Features
 *   **Data Stores:** Interface-based data stores for flexible data access patterns (e.g., SQLite, API).
@@ -191,7 +191,15 @@ Data Types: The CreateTable function supports basic data types (int, string, flo
 
 Relationships: Liteforge does not automatically handle database relationships (one-to-many, many-to-many). You'll need to implement relationship management logic yourself.
 
-Input Sanitization: The SanitizeInput function provides minimal sanitization. It's highly recommended to rely on prepared statements for SQL injection prevention and use a dedicated HTML sanitization library (e.g., github.com/microcosm-cc/bluemonday) if you need to sanitize HTML content.
+Input Sanitization: The `Sanitize` function is designed to prevent Cross-Site Scripting (XSS) attacks by sanitizing user-generated content intended for HTML output. It uses the Bluemonday library to strip potentially dangerous HTML tags and attributes while allowing safe formatting.
+
+**Important:** The `Sanitize` function does **NOT** protect against SQL injection. Always rely on Liteforge's prepared statements for database security. Sanitization is only for output rendering, not input validation.
+
+Example usage:
+```go
+sanitizedContent := liteforge.Sanitize("<script>alert('XSS')</script><p>Safe text</p>")
+// Result: "<p>Safe text</p>"
+```
 
 Test Thoroughly: Write comprehensive unit and integration tests to ensure the correctness and reliability of your code.
 
