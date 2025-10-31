@@ -49,23 +49,23 @@ func TestOpenDB_Unit(t *testing.T) {
 				defer os.Remove("test.db") // Remove test.db after the test
 			}
 
-			db, err := liteforge.OpenDB(tc.config)
+			ds, err := liteforge.OpenDB(tc.config)
 			if tc.name == "Write-Ahead Log Test" {
 				defer os.Remove("wal-test.db") // Remove test.db after the test
 				var journalMode string
-				err = db.QueryRow("PRAGMA journal_mode;").Scan(&journalMode)
+				err = ds.DB.QueryRow("PRAGMA journal_mode;").Scan(&journalMode)
 				if journalMode != "wal" {
 					t.Errorf("Journal mode not set to WAL: %s", journalMode)
 				}
 			}
 			if tc.expectedErr {
 				assert.Error(t, err)
-				assert.Nil(t, db)
+				assert.Nil(t, ds)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, db)
-				if db != nil {
-					db.Close() // Close the connection after the test
+				assert.NotNil(t, ds)
+				if ds != nil {
+					ds.DB.Close() // Close the connection after the test
 				}
 			}
 		})
@@ -113,14 +113,14 @@ func TestCreateTable(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup in-memory SQLite database for testing
-			db, err := liteforge.OpenDB(cfg)
+			ds, err := liteforge.OpenDB(cfg)
 			if err != nil {
 				t.Fatalf("Failed to open test database: %v", err)
 			}
-			defer db.Close()
+			defer ds.DB.Close()
 
 			// Test the CreateTable function
-			err = liteforge.CreateTable(db, tt.model)
+			err = liteforge.CreateTable(ds, tt.model)
 
 			// Check if error matches expected outcome
 			if (err != nil) != tt.wantErr {
@@ -137,7 +137,7 @@ func TestCreateTable(t *testing.T) {
 
 					// Query SQLite schema for table info
 					var count int
-					err := db.QueryRow(`SELECT COUNT(*) FROM sqlite_master 
+					err := ds.DB.QueryRow(`SELECT COUNT(*) FROM sqlite_master 
 						WHERE type='table' AND name=?`, tableName).Scan(&count)
 
 					if err != nil {
@@ -149,7 +149,7 @@ func TestCreateTable(t *testing.T) {
 					}
 
 					// Verify columns exist with correct types
-					rows, err := db.Query(`PRAGMA table_info(` + tableName + `)`)
+					rows, err := ds.DB.Query(`PRAGMA table_info(` + tableName + `)`)
 					if err != nil {
 						t.Errorf("Failed to query table schema: %v", err)
 					}

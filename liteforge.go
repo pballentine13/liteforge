@@ -5,6 +5,7 @@ import (
 )
 
 type Config = orm.Config
+type Datastore = orm.Datastore
 
 var OpenDB = orm.OpenDB
 var CreateTable = orm.CreateTable
