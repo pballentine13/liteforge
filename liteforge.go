@@ -11,8 +11,14 @@ type Datastore = orm.Datastore
 // Repository is the high-level, model-centric interface for CRUD operations.
 type Repository = model.Repository
 
+// DataStore is the application-specific interface for data access.
+type DataStore = model.DataStore
+
 // NewRepository creates a new model-centric repository.
 var NewRepository = model.NewORMRepository
+
+// NewDataStore creates a new ORM-backed DataStore.
+var NewDataStore = model.NewORMDataStore
 
 var OpenDB = orm.OpenDB
 var CreateTable = orm.CreateTable

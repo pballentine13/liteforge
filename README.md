@@ -1,19 +1,21 @@
 # Liteforge ORM
 
-A lightweight and flexible ORM for Go, designed for simplicity and ease of use with SQLite and PostgreSQL databases. Liteforge leverages Go's reflection capabilities to provide a clean and efficient way to interact with your database, minimizing boilerplate code and maximizing developer productivity.
+A lightweight and flexible ORM for Go, designed for simplicity and the **Repository** and **Data Store** patterns. Liteforge provides a clean and efficient way to interact with your database, minimizing boilerplate code and maximizing developer productivity.
 
 ## Features
 
-*   **Simple Configuration:** Easy-to-configure database connections for SQLite and PostgreSQL
-*   **Schema Generation:** Automatic table creation based on Go struct definitions
-*   **Reflection-Based Mapping:** Automatically maps Go struct fields to database columns using reflection and optional `db` tags.
-*   **Lightweight:** Minimal dependencies and a focus on performance.
-*   **Transactions:** Support for database transactions with `BeginTx`, `Commit`, and `Rollback`.
+*   **Multi-Database Support:** Seamlessly switch between **SQLite** and **PostgreSQL**.
+*   **Model-Centric Repository Pattern:** High-level CRUD operations (`Save`, `FindByID`, `Delete`) using Go structs and the `Repository` interface.
+*   **Interface-Based Data Stores:** The recommended pattern for application logic, allowing you to define and implement application-specific data access methods (e.g., `GetUserByID`).
+*   **Simple Configuration:** Easy-to-configure database connections.
+*   **Schema Generation:** Automatic table creation based on Go struct definitions.
+*   **Reflection-Based Mapping:** Automatically maps Go struct fields to database columns.
+*   **Transactions:** Support for database transactions.
 *   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
-*   **Model-Centric Repository:** High-level CRUD operations (Save, FindByID, Delete) using Go structs.
 
 ## Planned Features
-*   **Data Stores:** Interface-based data stores for flexible data access patterns (e.g., SQLite, API).
+
+*   **Relationships:** Support for defining and querying one-to-many and many-to-many relationships.
 
 ## Getting Started
 
@@ -22,13 +24,17 @@ A lightweight and flexible ORM for Go, designed for simplicity and ease of use w
 ```bash
 go get github.com/pballentine13/liteforge
 ```
+
 ### 2. Import the Library
+
 ```go
 import "github.com/pballentine13/liteforge" 
 ```
 
 ### 3. Define Your Data Models
-Use Go structs to represent your database tables. Use the db tag to customize the mapping between struct fields and database column names. Use the pk:"true" tag to mark the field as primary key with auto increment.
+
+Use Go structs to represent your database tables. Use the `pk:"true"` tag to mark the field as the primary key with auto-increment.
+
 ```go
 package model
 
@@ -40,6 +46,7 @@ type User struct {
 ```
 
 ### 4. Configure and Open the Database Connection
+
 ```go
 import (
 	"log"
@@ -66,37 +73,20 @@ func main() {
 		EncryptionKey:  "",          // Provide the key if EncryptAtRest is true (DO NOT HARDCODE)
 	}
 
-	db, err := liteforge.OpenDB(cfg)
+	// Open the database connection. We use 'ds' (DataStore) for the variable name.
+	ds, err := liteforge.OpenDB(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer ds.Close()
 
 	// ... rest of your code
 }
 ```
 
-### 5. Create the Table
-```go
-import (
-	"log"
+### 5. Using the Repository
 
-	"github.com/pballentine13/liteforge"  
-    "github.com/pballentine13/pkg/model"
-)
-
-func main() {
-	// ... (Database connection code from above)
-
-	err := liteforge.CreateTable(db, model.User{})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-```
-### 6. Using the Repository for CRUD Operations
-
-The `Repository` provides a high-level, model-centric interface for performing common database operations.
+The `Repository` provides a generic, model-centric interface for performing common CRUD operations.
 
 ```go
 import (
@@ -106,11 +96,17 @@ import (
 )
 
 func main() {
-	// ... (Database connection and table creation code from above)
+	// ... (Database connection code from above, using 'ds')
 
-	repo := liteforge.NewRepository(db)
+	// 1. Create the table
+	err := liteforge.CreateTable(ds, model.User{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// 1. INSERT (Save a new user)
+	repo := liteforge.NewRepository(ds)
+
+	// 2. INSERT (Save a new user)
 	newUser := &model.User{
 		Name:  "Alice",
 		Email: "alice@example.com",
@@ -123,7 +119,7 @@ func main() {
 	newUser.ID = int(newID)
 	log.Printf("Inserted user with ID: %d", newUser.ID)
 
-	// 2. SELECT (Find by ID)
+	// 3. SELECT (Find by ID)
 	foundUser := &model.User{}
 	err = repo.FindByID(foundUser, newUser.ID)
 	if err != nil {
@@ -131,7 +127,7 @@ func main() {
 	}
 	log.Printf("Found user: %+v", foundUser)
 
-	// 3. UPDATE (Save an existing user)
+	// 4. UPDATE (Save an existing user)
 	foundUser.Email = "alice.updated@example.com"
 	_, err = repo.Save(foundUser) // Save handles UPDATE when ID is non-zero
 	if err != nil {
@@ -139,7 +135,7 @@ func main() {
 	}
 	log.Printf("Updated user: %s", foundUser.Email)
 
-	// 4. DELETE
+	// 5. DELETE
 	_, err = repo.Delete(foundUser)
 	if err != nil {
 		log.Fatal(err)
@@ -148,10 +144,56 @@ func main() {
 }
 ```
 
-### Advanced Usage
-Custom Queries
+### 6. Using Data Stores (The Recommended Pattern)
+
+The Data Store pattern is recommended for application development. It allows you to define an interface with application-specific methods, keeping your business logic clean and decoupled from generic CRUD.
+
+First, define your Data Store interface (e.g., in `pkg/datastore/user.go`):
+
 ```go
-rows, err := liteforge.Query(db, "SELECT * FROM users WHERE name LIKE ?", "%John%")
+package datastore
+
+import "github.com/pballentine13/liteforge/pkg/model"
+
+type UserDataStore interface {
+    GetUserByID(id int) (*model.User, error)
+    FindUsersByName(name string) ([]*model.User, error)
+    SaveUser(user *model.User) error
+}
+```
+
+Next, implement the Data Store using `liteforge.NewDataStore`. This function uses reflection to implement the interface methods by mapping them to repository calls or custom queries.
+
+```go
+// In your main function or initialization logic:
+var userDS datastore.UserDataStore
+
+// Create the generic repository (using 'ds' from the connection step)
+repo := liteforge.NewRepository(ds)
+
+// Implement the Data Store interface
+err = liteforge.NewDataStore(&userDS, repo)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Now use the application-specific Data Store
+user, err := userDS.GetUserByID(1)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("User from Data Store: %+v", user)
+```
+
+## Advanced Usage
+
+### Custom Queries
+
+For operations not covered by the Repository, you can execute raw SQL queries using the underlying `Datastore` (`ds`).
+
+```go
+// Note: 'ds' is the variable from the connection step (liteforge.DB)
+rows, err := liteforge.Query(ds, "SELECT * FROM users WHERE name LIKE ?", "%John%")
 if err != nil {
     log.Fatal(err)
 }
@@ -160,15 +202,20 @@ defer rows.Close()
 // Process the rows
 ```
 
-Transactions
+### Transactions
+
+Transactions are managed using the `liteforge.BeginTx` function, which takes the `Datastore` (`ds`) as an argument.
+
 ```go
-tx, err := liteforge.BeginTx(db)
+// Note: 'ds' is the variable from the connection step (liteforge.DB)
+tx, err := liteforge.BeginTx(ds)
 if err != nil {
     log.Fatal(err)
 }
 defer tx.Rollback() // Rollback if we don't commit
 
 // Perform database operations within the transaction
+// Use 'tx' instead of 'ds' for operations inside the transaction scope
 
 err = tx.Commit()
 if err != nil {
@@ -176,27 +223,19 @@ if err != nil {
 }
 ```
 
-Important Considerations
-Security:
+## Important Considerations
 
-Prepared Statements: Liteforge uses prepared statements to prevent SQL injection. Always use prepared statements when handling user input.
+*   **Security:** Liteforge uses prepared statements to prevent SQL injection. Always use prepared statements when handling user input.
+*   **Encryption at Rest (SQLCipher):** If you enable `EncryptAtRest`, ensure you store the `EncryptionKey` securely (e.g., using environment variables or a secrets management solution). Never hardcode the encryption key!
+*   **Error Handling:** Handle errors gracefully and provide informative error messages.
+*   **Database Migrations:** For production applications, use a database migration tool (e.g., `golang-migrate/migrate`) to manage schema changes.
+*   **Input Sanitization:** The `SanitizeInput` function provides minimal sanitization. It's highly recommended to rely on prepared statements for SQL injection prevention and use a dedicated HTML sanitization library (e.g., `github.com/microcosm-cc/bluemonday`) if you need to sanitize HTML content.
+*   **Test Thoroughly:** Write comprehensive unit and integration tests to ensure the correctness and reliability of your code.
 
-Encryption at Rest (SQLCipher): If you enable EncryptAtRest, ensure you store the EncryptionKey securely (e.g., using environment variables or a secrets management solution). Never hardcode the encryption key!
+## Contributing
 
-Error Handling: Handle errors gracefully and provide informative error messages.
-
-Database Migrations: For production applications, use a database migration tool (e.g., golang-migrate/migrate) to manage schema changes.
-
-Data Types: The CreateTable function supports basic data types (int, string, float64, bool). Extend it to support other data types as needed.
-
-Relationships: Liteforge does not automatically handle database relationships (one-to-many, many-to-many). You'll need to implement relationship management logic yourself.
-
-Input Sanitization: The SanitizeInput function provides minimal sanitization. It's highly recommended to rely on prepared statements for SQL injection prevention and use a dedicated HTML sanitization library (e.g., github.com/microcosm-cc/bluemonday) if you need to sanitize HTML content.
-
-Test Thoroughly: Write comprehensive unit and integration tests to ensure the correctness and reliability of your code.
-
-Contributing
 Contributions are welcome! Please submit pull requests with clear descriptions of the changes. Follow the existing coding style and conventions. Be sure to include tests for any new features or bug fixes.
 
-License
+## License
+
 MIT License

@@ -210,3 +210,10 @@ func (r *ORMRepository) Delete(model any) (sql.Result, error) {
 	// 4. Execute the query
 	return orm.Exec(r.DS, query, pkValue)
 }
+
+// User is a sample model for demonstration purposes.
+type User struct {
+	ID   int `liteforge:"pk"`
+	Name string
+	Age  int
+}
