@@ -20,7 +20,7 @@ var Query = orm.Query
 var QueryRow = orm.QueryRow
 var Exec = orm.Exec
 var BeginTx = orm.BeginTx
-var SanitizeInput = orm.SanitizeInput
+var Sanitize = orm.Sanitize
 var GetTableName = orm.GetTableName
 var GetFieldInfo = orm.GetFieldInfo
 
