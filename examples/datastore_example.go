@@ -13,7 +13,7 @@ import (
 // User represents a user model with struct tags for ORM mapping.
 // The `pk:"true"` tag indicates the primary key field.
 // The `db` tag can specify additional constraints like "not null".
-type User struct {
+type DatastoreUser struct {
 	ID       int    `db:"not null" pk:"true"`
 	Username string `db:"unique not null"`
 	Email    string `db:"not null unique"`
@@ -21,7 +21,7 @@ type User struct {
 	IsActive bool
 }
 
-func main() {
+func datastoreExample() {
 	// Step 1: Configure the database connection.
 	// Using SQLite with an in-memory database for simplicity.
 	// In a real application, you might use a file-based database.
@@ -39,7 +39,7 @@ func main() {
 
 	// Step 3: Create the table based on the User struct.
 	// This uses reflection to generate the CREATE TABLE SQL.
-	err = liteforge.CreateTable(ds, User{})
+	err = liteforge.CreateTable(ds, DatastoreUser{})
 	if err != nil {
 		log.Fatalf("Failed to create table: %v", err)
 	}
@@ -49,7 +49,7 @@ func main() {
 
 	// CREATE: Insert a new user using orm.Insert.
 	fmt.Println("=== CREATE: Inserting a new user ===")
-	user := &User{
+	user := &DatastoreUser{
 		Username: "janedoe",
 		Email:    "jane@example.com",
 		Age:      25,
@@ -73,7 +73,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to query user: %v", err)
 	}
-	foundUser := &User{}
+	foundUser := &DatastoreUser{}
 	err = row.Scan(&foundUser.ID, &foundUser.Username, &foundUser.Email, &foundUser.Age, &foundUser.IsActive)
 	if err != nil {
 		if err == sql.ErrNoRows {
