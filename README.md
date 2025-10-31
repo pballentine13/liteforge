@@ -10,6 +10,7 @@ A lightweight and flexible ORM for Go, designed for simplicity and ease of use w
 *   **Lightweight:** Minimal dependencies and a focus on performance.
 *   **Transactions:** Support for database transactions with `BeginTx`, `Commit`, and `Rollback`.
 *   **Prepared Statements:** Built-in protection against SQL injection vulnerabilities.
+*   **Model-Centric Repository:** High-level CRUD operations (Save, FindByID, Delete) using Go structs.
 
 ## Planned Features
 *   **Data Stores:** Interface-based data stores for flexible data access patterns (e.g., SQLite, API).
@@ -93,7 +94,61 @@ func main() {
 	}
 }
 ```
-Advanced Usage
+### 6. Using the Repository for CRUD Operations
+
+The `Repository` provides a high-level, model-centric interface for performing common database operations.
+
+```go
+import (
+	"log"
+	"github.com/pballentine13/liteforge"
+	"github.com/pballentine13/liteforge/pkg/model"
+)
+
+func main() {
+	// ... (Database connection and table creation code from above)
+
+	repo := liteforge.NewRepository(db)
+
+	// 1. INSERT (Save a new user)
+	newUser := &model.User{
+		Name:  "Alice",
+		Email: "alice@example.com",
+	}
+	result, err := repo.Save(newUser) // Save handles INSERT when ID is 0
+	if err != nil {
+		log.Fatal(err)
+	}
+	newID, _ := result.LastInsertId()
+	newUser.ID = int(newID)
+	log.Printf("Inserted user with ID: %d", newUser.ID)
+
+	// 2. SELECT (Find by ID)
+	foundUser := &model.User{}
+	err = repo.FindByID(foundUser, newUser.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Found user: %+v", foundUser)
+
+	// 3. UPDATE (Save an existing user)
+	foundUser.Email = "alice.updated@example.com"
+	_, err = repo.Save(foundUser) // Save handles UPDATE when ID is non-zero
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Updated user: %s", foundUser.Email)
+
+	// 4. DELETE
+	_, err = repo.Delete(foundUser)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Deleted user with ID: %d", foundUser.ID)
+}
+```
+
+### Advanced Usage
 Custom Queries
 ```go
 rows, err := liteforge.Query(db, "SELECT * FROM users WHERE name LIKE ?", "%John%")

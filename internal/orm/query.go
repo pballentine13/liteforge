@@ -67,13 +67,30 @@ func (r postgresResult) RowsAffected() (int64, error) {
 }
 
 // Insert performs an INSERT operation for a given model.
-func Insert(ds *Datastore, model interface{}) (sql.Result, error) {
+func Insert(ds *Datastore, model any) (sql.Result, error) {
 	if ds == nil || ds.DB == nil || ds.Adapter == nil {
 		return nil, fmt.Errorf("datastore, database connection, or adapter was nil")
 	}
 
 	tableName := GetTableName(model)
-	columns, values := GetFieldInfo(model)
+	allColumns, allValues := GetFieldInfo(model)
+
+	pkCol, err := GetPrimaryKeyColumn(model)
+	// If no PK is defined, we insert all fields.
+	if err != nil {
+		pkCol = ""
+	}
+
+	columns := make([]string, 0, len(allColumns))
+	values := make([]any, 0, len(allValues))
+
+	for i, col := range allColumns {
+		if col == pkCol {
+			continue // Skip primary key for auto-increment
+		}
+		columns = append(columns, col)
+		values = append(values, allValues[i])
+	}
 
 	placeholders := make([]string, len(columns))
 	for i := range columns {
@@ -89,8 +106,7 @@ func Insert(ds *Datastore, model interface{}) (sql.Result, error) {
 
 	// Check if the adapter is PostgresAdapter to handle ID retrieval
 	if _, ok := ds.Adapter.(*PostgresAdapter); ok {
-		pkCol, err := GetPrimaryKeyColumn(model)
-		if err != nil {
+		if pkCol == "" {
 			// If no PK is defined, just run a standard Exec
 			return Exec(ds, query, values...)
 		}

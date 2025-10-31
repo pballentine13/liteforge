@@ -68,6 +68,25 @@ func GetPrimaryKeyColumn(model any) (string, error) {
 	return "", errors.New("model has no primary key field (tag: `pk:\"true\"`)")
 }
 
+// GetPrimaryKeyValue extracts the value of the primary key field from a struct.
+func GetPrimaryKeyValue(model any) (any, error) {
+	val := reflect.ValueOf(model)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	t := val.Type()
+
+	for i := 0; i < val.NumField(); i++ {
+		field := t.Field(i)
+		pkTag := field.Tag.Get("pk")
+		if pkTag == "true" {
+			return val.Field(i).Interface(), nil
+		}
+	}
+
+	return nil, errors.New("model has no primary key field (tag: `pk:\"true\"`)")
+}
+
 // CreateTable creates a database table based on the provided model using the Datastore's adapter.
 func CreateTable(ds *Datastore, model any) error {
 
