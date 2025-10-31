@@ -5,7 +5,7 @@
 
 A lightweight and flexible ORM for Go, designed for simplicity and the **Repository** and **Data Store** patterns. Liteforge provides a clean and efficient way to interact with your database, minimizing boilerplate code and maximizing developer productivity.
 
-**Note:** This is a small, educational project created for learning purposes. It demonstrates Go ORM concepts and was developed with assistance from AI tools.
+**Note:** This is a small, educational project created for learning purposes. It demonstrates Go ORM concepts and was developed with assistance from AI tools to explore modern development practices.
 
 ## Features
 
