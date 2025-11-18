@@ -28,14 +28,14 @@ import "github.com/pballentine13/liteforge"
 ```
 
 ### 3. Define Your Data Models
-Use Go structs to represent your database tables. Use the db tag to customize the mapping between struct fields and database column names. Use the pk:"true" tag to mark the field as primary key with auto increment.
+Use Go structs to represent your database tables. Use the `db` tag to add column constraints (e.g., "not null", "unique"). Use the `pk:"true"` tag to mark the field as primary key with auto increment.
 ```go
 package model
 
 type User struct {
-    ID    int    `db:"id" pk:"true"` // Auto-incrementing primary key
-    Name  string                     // Maps to the "name" column
-    Email string                     // Maps to the "email" column
+    ID    int    `pk:"true"`         // Auto-incrementing primary key
+    Name  string `db:"not null"`     // Required field
+    Email string `db:"unique"`       // Unique constraint
 }
 ```
 
@@ -81,14 +81,14 @@ func main() {
 import (
 	"log"
 
-	"github.com/pballentine13/liteforge"  
+	"github.com/pballentine13/liteforge"
     "github.com/pballentine13/pkg/model"
 )
 
 func main() {
 	// ... (Database connection code from above)
 
-	err := liteforge.CreateTable(db, model.User{})
+	err := liteforge.CreateTable(db, &model.User{})
 	if err != nil {
 		log.Fatal(err)
 	}
