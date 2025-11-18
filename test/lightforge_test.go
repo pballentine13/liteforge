@@ -108,6 +108,11 @@ func TestCreateTable(t *testing.T) {
 			model:   "not a struct",
 			wantErr: true,
 		},
+		{
+			name:    "Valid pointer to struct",
+			model:   &TestUser{},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
