@@ -64,9 +64,12 @@ func (a *SQLiteAdapter) CreateTableSQL(model interface{}) (string, error) {
 		return "", errors.New("no model passed in. model was nil")
 	}
 
-	modelKind := reflect.TypeOf(model).Kind()
-	if modelKind != reflect.Struct {
-		return "", errors.New("no model passed in")
+	t := reflect.TypeOf(model)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		return "", errors.New("model must be a struct or pointer to struct")
 	}
 	tableName := GetTableName(model)
 
@@ -77,7 +80,7 @@ func (a *SQLiteAdapter) CreateTableSQL(model interface{}) (string, error) {
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
-	t := val.Type()
+	t = val.Type()
 	for i := 0; i < val.NumField(); i++ {
 		field := t.Field(i)
 		columnName := strings.ToLower(field.Name) // Default column name
@@ -170,9 +173,12 @@ func (a *PostgresAdapter) CreateTableSQL(model interface{}) (string, error) {
 		return "", errors.New("no model passed in. model was nil")
 	}
 
-	modelKind := reflect.TypeOf(model).Kind()
-	if modelKind != reflect.Struct {
-		return "", errors.New("no model passed in")
+	t := reflect.TypeOf(model)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		return "", errors.New("model must be a struct or pointer to struct")
 	}
 	tableName := GetTableName(model)
 
@@ -183,7 +189,7 @@ func (a *PostgresAdapter) CreateTableSQL(model interface{}) (string, error) {
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
-	t := val.Type()
+	t = val.Type()
 	for i := 0; i < val.NumField(); i++ {
 		field := t.Field(i)
 		columnName := strings.ToLower(field.Name) // Default column name
