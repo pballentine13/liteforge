@@ -13,7 +13,7 @@ import (
 // and returns a liteforge.Repository and a cleanup function.
 func setupTestDB(t *testing.T) (liteforge.Repository, func()) {
 	cfg := liteforge.Config{
-		DriverName:     "sqlite3",
+		DriverName:     "sqlite",
 		DataSourceName: ":memory:",
 	}
 
