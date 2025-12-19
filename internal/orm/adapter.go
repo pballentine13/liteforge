@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"strings"
 
-	_ "github.com/lib/pq"           // For PostgreSQL
-	_ "github.com/mattn/go-sqlite3" // For SQLite
+	_ "github.com/lib/pq"  // For PostgreSQL
+	_ "modernc.org/sqlite" // For SQLite
 )
 
 // DBAdapter defines the interface for database-specific operations.

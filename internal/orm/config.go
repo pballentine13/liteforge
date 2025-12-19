@@ -17,7 +17,7 @@ type Config struct {
 func OpenDB(cfg Config) (*Datastore, error) {
 	var adapter DBAdapter
 	switch cfg.DriverName {
-	case "sqlite3":
+	case "sqlite", "sqlite3":
 		adapter = &SQLiteAdapter{}
 	case "postgres":
 		adapter = &PostgresAdapter{}

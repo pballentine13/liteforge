@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	_ "modernc.org/sqlite"
+	//	_ "github.com/mattn/go-sqlite3" // SQLite driver
 	"github.com/pballentine13/liteforge"
 	"github.com/pballentine13/liteforge/internal/orm"
 )
@@ -26,7 +27,7 @@ func datastoreExample() {
 	// Using SQLite with an in-memory database for simplicity.
 	// In a real application, you might use a file-based database.
 	cfg := liteforge.Config{
-		DriverName:     "sqlite3",
+		DriverName:     "sqlite",
 		DataSourceName: ":memory:", // Use ":memory:" for in-memory DB
 	}
 

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	_ "modernc.org/sqlite"
 
 	"github.com/pballentine13/liteforge"
 )
@@ -18,7 +19,7 @@ func TestOpenDB_Unit(t *testing.T) {
 		{
 			name: "In-Memory Database",
 			config: liteforge.Config{
-				DriverName:     "sqlite3",
+				DriverName:     "sqlite",
 				DataSourceName: ":memory:", // In-memory database for testing
 			},
 			expectedErr: false,
@@ -26,7 +27,7 @@ func TestOpenDB_Unit(t *testing.T) {
 		{
 			name: "File-Based Database",
 			config: liteforge.Config{
-				DriverName:     "sqlite3",
+				DriverName:     "sqlite",
 				DataSourceName: "test.db", // File-based database
 			},
 			expectedErr: false,
@@ -34,7 +35,7 @@ func TestOpenDB_Unit(t *testing.T) {
 		{
 			name: "Write-Ahead Log Test",
 			config: liteforge.Config{
-				DriverName:        "sqlite3",
+				DriverName:        "sqlite",
 				DataSourceName:    "wal-test.db",
 				UseWriteAheadLogs: true,
 			},
@@ -82,7 +83,7 @@ type TestUser struct {
 }
 
 var cfg liteforge.Config = liteforge.Config{
-	DriverName:     "sqlite3",
+	DriverName:     "sqlite",
 	DataSourceName: ":memory:",
 }
 
